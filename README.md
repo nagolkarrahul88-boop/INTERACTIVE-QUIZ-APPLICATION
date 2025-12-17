@@ -48,3 +48,9 @@ Conclusion
 The CODTECH Interactive Quiz Application is a complete beginner‑to‑intermediate level project that showcases practical implementation of web development concepts. It demonstrates strong fundamentals in HTML, CSS, and JavaScript, along with logical thinking, user experience design, and real‑world problem handling. This project is especially suitable for internships, academic submissions, and portfolios, as it reflects both technical skills and application‑oriented thinking.
 
 
+#OUTPUT
+
+<img width="1365" height="658" alt="Image" src="https://github.com/user-attachments/assets/c31e009a-8e37-423e-a44d-9d74321f15bd" />
+<img width="1365" height="658" alt="Image" src="https://github.com/user-attachments/assets/1ca316b2-8557-4325-be24-8c748d85ca0b" />
+<img width="1365" height="657" alt="Image" src="https://github.com/user-attachments/assets/5339347b-58d1-45ad-a3a0-0e17ab9f605a" />
+<img width="1365" height="661" alt="Image" src="https://github.com/user-attachments/assets/adb664dd-1d88-4577-b51f-f90f9bae8a1c" />
