@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CODTECH Quiz Application</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #141e30, #243b55);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .quiz-container {
+            background: #1f2933;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 15px;
+        }
+
+        .question {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .options button {
+            width: 100%;
+            padding: 12px;
+            margin: 6px 0;
+            border: none;
+            border-radius: 6px;
+            background: #3b82f6;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .options button:hover {
+            transform: scale(1.03);
+        }
+
+        .correct {
+            background: #16a34a !important;
+            animation: pop 0.3s ease;
+        }
+
+        .wrong {
+            background: #dc2626 !important;
+            animation: shake 0.3s ease;
+        }
+
+        @keyframes pop {
+            from {
+                transform: scale(0.9);
+            }
+
+            to {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            50% {
+                transform: translateX(5px);
+            }
+
+            75% {
+                transform: translateX(-5px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        .next-btn,
+        .download-btn {
+            margin-top: 15px;
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .next-btn {
+            background: #f59e0b;
+            color: black;
+            display: none;
+        }
+
+        .download-btn {
+            background: #22c55e;
+            color: black;
+        }
+
+        .score {
+            margin-top: 10px;
+        }
+
+        canvas {
+            display: none;
+            margin: 15px auto;
+            background: white;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 480px) {
+            .question {
+                font-size: 16px;
+            }
+        }
+
+        /* Certificate-only mode */
+        body.certificate-mode .quiz-container {
+            background: transparent;
+            box-shadow: none;
+        }
+
+        body.certificate-mode h1 {
+            display: none;
+        }
+
+        body.certificate-mode {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        body.certificate-mode .quiz-container {
+            background: transparent;
+            box-shadow: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        body.certificate-mode #certificateSection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #timer {
+            font-weight: bold;
+        }
+
+        .timer-warning {
+            color: #ef4444;
+            /* red */
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="quiz-container">
+
+        <h1>CODTECH Quiz</h1>
+
+        <!-- START FORM -->
+        <div id="startForm" style="display:none;">
+
+
+            <p>Please enter your details to begin</p>
+
+            <input type="text" id="fullName" placeholder="Enter your full name"
+                style="width:100%;padding:10px;border-radius:6px;border:none;margin-bottom:10px;">
+
+            <label style="font-size:14px;">
+                <input type="checkbox" id="declaration">
+                I confirm that I am attempting this quiz myself
+            </label>
+
+            <br><br>
+            <button class="next-btn" style="display:block;background:#22c55e;" onclick="startQuiz()">Start Quiz</button>
+
+            <p id="formError" style="color:#f87171;font-size:14px;"></p>
+        </div>
+        <!-- INSTRUCTIONS -->
+        <div id="instructions">
+            <h3>Instructions</h3>
+            <ul style="text-align:left;font-size:14px;">
+                <li>Ensure stable internet connection</li>
+                <li>Do not refresh or close the tab</li>
+                <li>Quiz timer will start immediately</li>
+                <li>Score will be shown only after completion</li>
+            </ul>
+            <button class="next-btn" style="display:block;background:#22c55e;" onclick="showStartForm()">I
+                Understand</button>
+        </div>
+
+
+        <!-- QUIZ -->
+        <div id="quiz" style="display:none;">
+            <div style="display:flex;justify-content:space-between;font-size:14px; ">
+                <span id="progress"></span>
+                <span id="timer" style="padding-bottom:15px;"></span>
+            </div>
+
+            <div class="question" id="question"></div>
+            <div class="options" id="options"></div>
+
+            <div style="display:flex;justify-content:space-between;">
+                <button class="next-btn" id="prevBtn" style="display:none;">Previous</button>
+
+                <button class="next-btn" id="nextBtn">Next</button>
+            </div>
+        </div>
+
+
+        <!-- CERTIFICATE -->
+        <div id="certificateSection" style="display:none;">
+            <canvas id="certificateCanvas" width="600" height="400"></canvas>
+            <button class="download-btn" onclick="downloadCertificate()">Download Certificate</button>
+        </div>
+
+    </div>
+
+
+    <script>
+        /* ================= QUESTIONS ================= */
+        let questions = [
+    {
+        q: "What does HTML stand for?",
+        o: [
+            "Hyper Text Markup Language",
+            "High Text Machine Language",
+            "Hyperlinks Text Markup",
+            "Home Tool Markup Language"
+        ],
+        a: 0
+    },
+    {
+        q: "Which language is used to style web pages?",
+        o: ["HTML", "CSS", "JavaScript", "Python"],
+        a: 1
+    },
+    {
+        q: "Which JavaScript keyword is used to declare a variable?",
+        o: ["int", "string", "var", "float"],
+        a: 2
+    },
+    {
+        q: "Which symbol is used for single-line comments in JavaScript?",
+        o: ["<!-- -->", "//", "/* */", "#"],
+        a: 1
+    },
+    {
+        q: "Which HTML tag is used to create a hyperlink?",
+        o: ["<link>", "<a>", "<href>", "<url>"],
+        a: 1
+    },
+    {
+        q: "Which CSS property controls the text size?",
+        o: ["font-style", "text-size", "font-size", "text-style"],
+        a: 2
+    },
+    {
+        q: "Which method is used to add an element at the end of an array in JavaScript?",
+        o: ["push()", "pop()", "shift()", "unshift()"],
+        a: 0
+    },
+    {
+        q: "Which HTML attribute is used to provide an alternate text for images?",
+        o: ["title", "src", "alt", "href"],
+        a: 2
+    },
+    {
+        q: "What does CSS stand for?",
+        o: [
+            "Computer Style Sheets",
+            "Cascading Style Sheets",
+            "Creative Style System",
+            "Colorful Style Sheets"
+        ],
+        a: 1
+    },
+    {
+        q: "Which JavaScript function is used to display a message box?",
+        o: ["prompt()", "console.log()", "alert()", "confirm()"],
+        a: 2
+    }
+];
+
+        questions.sort(() => Math.random() - 0.5);
+
+        /* ================= STATE ================= */
+        let current = 0;
+        let answers = Array(questions.length).fill(null);
+        let score = 0;
+        let userName = "";
+        let timeLeft = 2 * 60; // 5 minutes total quiz time
+        let timerInterval;
+
+        /* ================= ELEMENTS ================= */
+        const startForm = document.getElementById("startForm");
+        const quiz = document.getElementById("quiz");
+        const certSection = document.getElementById("certificateSection");
+        const questionEl = document.getElementById("question");
+        const optionsEl = document.getElementById("options");
+        const nextBtn = document.getElementById("nextBtn");
+        const canvas = document.getElementById("certificateCanvas");
+        const ctx = canvas.getContext("2d");
+        const errorEl = document.getElementById("formError");
+        const prevBtn = document.getElementById("prevBtn");
+
+
+        function showStartForm() {
+            document.getElementById("instructions").style.display = "none";
+            document.getElementById("startForm").style.display = "block";
+        }
+
+
+        /* ================= START QUIZ ================= */
+        function startQuiz() {
+            const nameInput = document.getElementById("fullName").value.trim();
+            const declaration = document.getElementById("declaration").checked;
+            const nameRegex = /^[A-Za-z]+(?:\s+[A-Za-z]+)+$/;
+
+            if (!nameRegex.test(nameInput)) {
+                errorEl.innerText = "Please enter valid full name.";
+                return;
+            }
+            if (!declaration) {
+                errorEl.innerText = "Please accept the declaration.";
+                return;
+            }
+
+            userName = nameInput;
+            startForm.style.display = "none";
+            quiz.style.display = "block";
+
+            startTimer();
+            loadQuestion();
+        }
+
+        /* ================= TIMER ================= */
+        function startTimer() {
+            const timerBox = document.getElementById("timer");
+
+            updateTimerDisplay(timerBox);
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay(timerBox);
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    finishQuiz();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay(timerBox) {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+
+            timerBox.innerText =
+                `Time Left: ${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+
+            // 🔴 Turn red when 1 minute or less
+            if (timeLeft <= 60) {
+                timerBox.classList.add("timer-warning");
+            } else {
+                timerBox.classList.remove("timer-warning");
+            }
+        }
+
+
+
+        /* ================= LOAD QUESTION ================= */
+        function loadQuestion() {
+            optionsEl.innerHTML = "";
+
+            const q = questions[current];
+            questionEl.innerText =
+                `Q${current + 1}/${questions.length}: ${q.q}`;
+
+            // 🔹 Show / Hide Previous button
+            if (current === 0) {
+                prevBtn.style.display = "none";
+            } else {
+                prevBtn.style.display = "block";
+            }
+
+            q.o.forEach((opt, i) => {
+                const btn = document.createElement("button");
+                btn.innerText = opt;
+
+                if (answers[current] === i) {
+                    btn.classList.add("correct");
+                }
+
+                btn.onclick = () => {
+                    answers[current] = i;
+                    document.querySelectorAll(".options button")
+                        .forEach(b => b.classList.remove("correct"));
+                    btn.classList.add("correct");
+                };
+
+                optionsEl.appendChild(btn);
+            });
+
+            nextBtn.style.display = "block";
+            nextBtn.innerText = current === questions.length - 1 ? "Submit" : "Next";
+        }
+
+
+        /* ================= NAVIGATION ================= */
+        nextBtn.onclick = () => {
+            if (current < questions.length - 1) {
+                current++;
+                loadQuestion();
+            } else {
+                finishQuiz();
+            }
+        };
+        prevBtn.onclick = () => {
+            if (current > 0) {
+                current--;
+                loadQuestion();
+            }
+        };
+
+
+        /* ================= FINISH QUIZ ================= */
+        function finishQuiz() {
+            clearInterval(timerInterval);
+            quiz.style.display = "none";
+            certSection.style.display = "block";
+            document.body.classList.add("certificate-mode");
+
+            // calculate score silently
+            score = answers.reduce(
+                (s, ans, i) => ans === questions[i].a ? s + 1 : s,
+                0
+            );
+
+            generateCertificate();
+        }
+
+        /* ================= CERTIFICATE ================= */
+        function generateCertificate() {
+            canvas.style.display = "block";
+            ctx.clearRect(0, 0, 600, 400);
+
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, 600, 400);
+
+            ctx.strokeStyle = "#d4af37";
+            ctx.lineWidth = 6;
+            ctx.strokeRect(15, 15, 570, 370);
+
+            ctx.textAlign = "center";
+            ctx.fillStyle = "#d4af37";
+            ctx.font = "bold 34px Arial";
+            ctx.fillText("CERTIFICATE", 300, 80);
+
+            ctx.fillStyle = "#1f2933";
+            ctx.font = "18px Arial";
+            ctx.fillText("OF APPRECIATION", 300, 110);
+
+            ctx.font = "14px Arial";
+            ctx.fillText("THIS CERTIFICATE IS PROUDLY PRESENTED TO", 300, 150);
+
+            ctx.font = "italic 28px Georgia";
+            ctx.fillText(userName, 300, 190);
+
+            ctx.font = "14px Arial";
+            ctx.fillText("For successfully completing the Interactive Quiz Application", 300, 230);
+            ctx.fillText("Internship Task with excellent performance.", 300, 250);
+
+            ctx.textAlign = "left";
+            ctx.fillText(`Date: ${new Date().toLocaleDateString()}`, 60, 300);
+
+            ctx.textAlign = "right";
+            ctx.fillText(`Score: ${score}/${questions.length}`, 540, 300);
+        }
+
+        /* ================= DOWNLOAD ================= */
+        function downloadCertificate() {
+            const link = document.createElement("a");
+            link.href = canvas.toDataURL("image/png");
+            link.download = "CODTECH_Certificate.png";
+            link.click();
+        }
+    </script>
+
+
+
+</body>
+
+</html>
